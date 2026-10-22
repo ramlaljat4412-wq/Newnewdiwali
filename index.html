@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLN BRANDS - Mega Diwali Sale</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+        body { background-color: #f0f0f0; color: #333; font-family: 'Roboto', sans-serif; }
+        .meesho-pink { background-color: #9f2089; }
+        .meesho-text-pink { color: #9f2089; }
+        .meesho-green { color: #038d63; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        .bottom-checkout-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; padding: 12px 16px;
+            border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;
+            z-index: 50; max-width: 28rem; margin: 0 auto; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+
+        /* VFX Glowing Banner Style */
+        .vfx-banner {
+            background: linear-gradient(270deg, #ff0000, #ff7300, #ff00c8, #9f2089);
+            background-size: 800% 800%;
+            animation: vfxGlow 6s ease infinite;
+        }
+        @keyframes vfxGlow {
+            0%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+            100%{background-position:0% 50%}
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        const LOGO_URL = "https://img.sanishtech.com/u/bb515368aae700c85954bc3cb328e9c5.png";
+
+        // ALL PRICES SET TO 200, OLD PRICES SET TO 799/899
+        const products = [
+            // LEHENGA CHOLI (200₹)
+            { id: 1001, name: "Premium Red Lehenga Choli", price: 200, oldPrice: 899, stock: 3, img: "https://img.sanishtech.com/u/454ae292427c963e05c01ebcb624219f.jpg", category: "lehenga", isTop: true },
+            { id: 1002, name: "Festive Lehenga Choli", price: 200, oldPrice: 799, stock: 4, img: "https://img.sanishtech.com/u/2e4e2788099270c4b73312ce248d74da.jpg", category: "lehenga", isTop: true },
+            { id: 1003, name: "Designer Lehenga Collection", price: 200, oldPrice: 899, stock: 2, img: "https://img.sanishtech.com/u/833d30943eb6c314cd558e31f4d1442e.jpg", category: "lehenga" },
+            { id: 1004, name: "Classic Ethnic Lehenga", price: 200, oldPrice: 799, stock: 5, img: "https://img.sanishtech.com/u/fc7d67a577a825a96d5c3bfe0952a970.jpg", category: "lehenga" },
+            { id: 1005, name: "Royal Look Lehenga Set", price: 200, oldPrice: 899, stock: 1, img: "https://img.sanishtech.com/u/4750cbfa5654295f10d7a33cee5551c9.jpg", category: "lehenga" },
+            { id: 1006, name: "Bridal/Party Lehenga", price: 200, oldPrice: 799, stock: 6, img: "https://img.sanishtech.com/u/6542c8dd91d4be764f87e36e13382e21.jpg", category: "lehenga" },
+            { id: 1007, name: "Trendy Georgette Lehenga", price: 200, oldPrice: 899, stock: 2, img: "https://img.sanishtech.com/u/f7508f251b201e5cd3e9f4c9d6750c19.jpg", category: "lehenga" },
+            { id: 1008, name: "Bollywood Style Lehenga", price: 200, oldPrice: 799, stock: 3, img: "https://img.sanishtech.com/u/8f229acd149bab04829c21e50a97e3bc.jpg", category: "lehenga" },
+
+            // SAREES (200₹)
+            { id: 508, name: "Luxury Festive Saree", price: 200, oldPrice: 899, stock: 4, img: "https://img.sanishtech.com/u/183b48d7d2b892247af816efa1d6816c.jpg", category: "saree", isTop: true },
+            { id: 509, name: "Premium Border Saree", price: 200, oldPrice: 799, stock: 2, img: "https://img.sanishtech.com/u/88c63b8769763f5f83c88169553e316a.jpg", category: "saree" },
+            { id: 16, name: "Premium Designer Saree", price: 200, oldPrice: 899, stock: 4, img: "https://img.sanishtech.com/u/52869379b40a63c801fa89c8c1a1229f.jpg", category: "saree" },
+            { id: 17, name: "Luxury Party Saree", price: 200, oldPrice: 799, stock: 2, img: "https://img.sanishtech.com/u/a6b0d0c656f3ffaf693c4dfbe41d369b.jpg", category: "saree" },
+            { id: 18, name: "Festive Special Saree", price: 200, oldPrice: 899, stock: 5, img: "https://img.sanishtech.com/u/87562f37983f00db41f75944c96e07d7.jpg", category: "saree" },
+            { id: 19, name: "Classic Ethnic Saree", price: 200, oldPrice: 799, stock: 3, img: "https://img.sanishtech.com/u/2c015c1f429994b834ce732963ed4e6a.jpg", category: "saree" },
+
+            // GIRLS DIWALI OUTFIT
+            { id: 1, name: "Premium Girls Diwali Outfit", price: 200, oldPrice: 899, stock: 5, img: "https://img.sanishtech.com/u/90efe66f6fb78a28a50b664a652da801.jpg", category: "girls_diwali", isTop: true },
+            { id: 2, name: "Festive Special Girls Wear", price: 200, oldPrice: 799, stock: 3, img: "https://img.sanishtech.com/u/756f40158a4ee89051b272d2297679b1.jpg", category: "girls_diwali" },
+            { id: 3, name: "Designer Girls Outfit", price: 200, oldPrice: 899, stock: 2, img: "https://img.sanishtech.com/u/62425195bbba7f8cfa1fd3bc48e80606.jpg", category: "girls_diwali" },
+            { id: 4, name: "Luxury Festive Girls Wear", price: 200, oldPrice: 799, stock: 4, img: "https://img.sanishtech.com/u/83d60bf10f7f2fd12e67e1e3850b53c2.jpg", category: "girls_diwali" },
+            { id: 5, name: "Elite Girls Diwali Look", price: 200, oldPrice: 899, stock: 6, img: "https://img.sanishtech.com/u/5164dd3175186dbbce6f37f7725280b7.jpg", category: "girls_diwali" },
+            
+            // SHARARA SETS
+            { id: 23, name: "Premium Sharara Set", price: 200, oldPrice: 799, stock: 3, img: "https://img.sanishtech.com/u/9cac5cfb87fdd9c59c8124fa6b07f6a2.jpg", category: "sharara" },
+            { id: 24, name: "Festive Sharara Suit", price: 200, oldPrice: 899, stock: 4, img: "https://img.sanishtech.com/u/bad4a0548b6a15a8a899bf73d64d17d2.jpg", category: "sharara" },
+            { id: 25, name: "Designer Sharara Dress", price: 200, oldPrice: 799, stock: 2, img: "https://img.sanishtech.com/u/4534ad95c3bab9c25aeb025253be8ccc.jpg", category: "sharara" },
+
+            // KIDS DIWALI
+            { id: 28, name: "Kids Diwali Special Wear", price: 200, oldPrice: 899, stock: 6, img: "https://img.sanishtech.com/u/ab495e212399212aec871b997e1ebca2.webp", category: "kids_diwali" },
+            { id: 29, name: "Boys/Girls Combo Wear", price: 200, oldPrice: 799, stock: 4, img: "https://img.sanishtech.com/u/559018c250267c379cadfaa8da030c41.webp", category: "kids_diwali" },
+
+            // BOYS SPECIAL
+            { id: 32, name: "Boys Casual Wear", price: 200, oldPrice: 899, stock: 4, img: "https://img.sanishtech.com/u/ba8499c95473c5aa0ff1cdcbbb025ccc.jpg", category: "boys" },
+            { id: 33, name: "Smart Boys Outfit", price: 200, oldPrice: 799, stock: 3, img: "https://img.sanishtech.com/u/5f1931ece6253f55b8fa8beb9225483f.jpg", category: "boys" },
+
+            // PREMIUM JACKETS
+            { id: 36, name: "Stylish Men Jacket", price: 200, oldPrice: 899, stock: 4, img: "https://img.sanishtech.com/u/a2f1641804423887855eef26c7d58307.jpg", category: "jackets" },
+            { id: 37, name: "Winter Premium Jacket", price: 200, oldPrice: 799, stock: 3, img: "https://img.sanishtech.com/u/f3e5e288da6db53588c58863d3d8f402.jpg", category: "jackets" },
+            { id: 38, name: "Casual Bomber Jacket", price: 200, oldPrice: 899, stock: 5, img: "https://img.sanishtech.com/u/39b324873d9fc7d9649bfc399c9d861c.jpg", category: "jackets" },
+
+            // SHOES
+            { id: 53, name: "Premium Casual Sneakers", price: 200, oldPrice: 899, stock: 4, img: "https://img.sanishtech.com/u/927009130fdffd818411fef47564c1ea.png", category: "shoes" },
+            { id: 54, name: "Classic Sports Shoes", price: 200, oldPrice: 799, stock: 6, img: "https://img.sanishtech.com/u/9ca1174fde9fec693e66e1a0b8ed378b.png", category: "shoes" },
+            { id: 55, name: "Elite Running Shoes", price: 200, oldPrice: 899, stock: 3, img: "https://img.sanishtech.com/u/1341616a6569f5c473a46ed2ababa6b8.jpg", category: "shoes" },
+            { id: 56, name: "Trendy Walking Shoes", price: 200, oldPrice: 799, stock: 8, img: "https://img.sanishtech.com/u/356eabf4787d35410b2ce1c76285e483.jpg", category: "shoes" },
+            
+            // MIXED/OTHER OFFERS
+            { id: 45, name: "Diwali Ethnic Wear", price: 200, oldPrice: 899, stock: 3, img: "https://img.sanishtech.com/u/96e4aa5c9c805fff022ce8f64d9b52fd.png", category: "mixed" },
+            { id: 50, name: "Premium Blue Hoodie", price: 200, oldPrice: 799, stock: 3, img: "https://img.sanishtech.com/u/509cc1bf227d777146d395a8f4de1525.png", category: "mixed" },
+        ];
+
+        const categoryList = [
+            { id: 'lehenga', title: "Lehenga Choli", img: "https://img.sanishtech.com/u/454ae292427c963e05c01ebcb624219f.jpg" },
+            { id: 'saree', title: "Premium Sarees", img: "https://img.sanishtech.com/u/52869379b40a63c801fa89c8c1a1229f.jpg" },
+            { id: 'girls_diwali', title: "Girls Diwali Special", img: "https://img.sanishtech.com/u/90efe66f6fb78a28a50b664a652da801.jpg" },
+            { id: 'sharara', title: "Sharara Sets", img: "https://img.sanishtech.com/u/9cac5cfb87fdd9c59c8124fa6b07f6a2.jpg" },
+            { id: 'kids_diwali', title: "Kids Festive Wear", img: "https://img.sanishtech.com/u/ab495e212399212aec871b997e1ebca2.webp" },
+            { id: 'boys', title: "Boys Special", img: "https://img.sanishtech.com/u/ba8499c95473c5aa0ff1cdcbbb025ccc.jpg" },
+            { id: 'jackets', title: "Premium Jackets", img: "https://img.sanishtech.com/u/a2f1641804423887855eef26c7d58307.jpg" },
+            { id: 'shoes', title: "Premium Footwear", img: "https://img.sanishtech.com/u/927009130fdffd818411fef47564c1ea.png" }
+        ];
+
+        const App = () => {
+            const [currentView, setCurrentView] = useState('splash');
+            const [cart, setCart] = useState([]);
+            const [loginDetails, setLoginDetails] = useState({ name: '', phone: '' });
+            const [selectedProduct, setSelectedProduct] = useState(null);
+            
+            const [address, setAddress] = useState({ house: '', area: '', city: '', state: '', pin: '', primaryPhone: '', altPhone: '' });
+            const [selectedSizes, setSelectedSizes] = useState({});
+            const [showPopup, setShowPopup] = useState(false);
+            const [couponInput, setCouponInput] = useState('');
+            const [isCouponApplied, setIsCouponApplied] = useState(false);
+            
+            const [activeCategory, setActiveCategory] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+
+            const DELIVERY_FEE = 20;
+            const WHATSAPP_NUMBER = "918018929965";
+
+            useEffect(() => {
+                if (currentView === 'splash') {
+                    const timer = setTimeout(() => { setCurrentView('login'); }, 2500); 
+                    return () => clearTimeout(timer);
+                }
+            }, [currentView]);
+
+            const handleSizeChange = (productId, size) => setSelectedSizes(prev => ({ ...prev, [productId]: size }));
+
+            const openProductDetail = (product) => {
+                setSelectedProduct(product);
+                if (!selectedSizes[product.id]) {
+                    let defaultSize = 'M';
+                    if (['saree', 'lehenga'].includes(product.category)) defaultSize = 'Free Size';
+                    else if (product.category === 'shoes') defaultSize = '8';
+                    handleSizeChange(product.id, defaultSize);
+                }
+                setCurrentView('pdp');
+                window.scrollTo(0,0);
+            };
+
+            const addToCart = (e, product, directCheckout = false) => {
+                if(e) { e.preventDefault(); e.stopPropagation(); }
+
+                let defaultSize = 'M';
+                if (['saree', 'lehenga'].includes(product.category)) defaultSize = 'Free Size';
+                else if (product.category === 'shoes') defaultSize = '8';
+
+                const size = selectedSizes[product.id] || defaultSize; 
+                
+                setCart(prev => {
+                    const existingIndex = prev.findIndex(item => item.id === product.id && item.size === size);
+                    if (existingIndex >= 0) {
+                        const newCart = [...prev];
+                        newCart[existingIndex] = { ...newCart[existingIndex], quantity: newCart[existingIndex].quantity + 1 };
+                        return newCart;
+                    }
+                    return [...prev, { ...product, quantity: 1, size: size }];
+                });
+                
+                if (directCheckout) { setCurrentView('cart'); window.scrollTo(0,0); } 
+                else { setShowPopup(true); setTimeout(() => setShowPopup(false), 3500); }
+            };
+
+            const updateQuantity = (id, size, delta) => {
+                setCart(prev => prev.map(item => {
+                    if (item.id === id && item.size === size) {
+                        const newQ = item.quantity + delta;
+                        return newQ > 0 ? { ...item, quantity: newQ } : item;
+                    }
+                    return item;
+                }).filter(item => item.quantity > 0));
+            };
+
+            const handleApplyCoupon = () => {
+                if(couponInput.trim().toUpperCase() === 'DIWALI100') {
+                    setIsCouponApplied(true);
+                } else {
+                    alert("Invalid or Expired Coupon Code!");
+                }
+            };
+
+            const totals = useMemo(() => {
+                let totalItems = 0;
+                cart.forEach(item => { totalItems += item.quantity; });
+                
+                const rawTotal = totalItems * 200; 
+                
+                const groupsOf3 = Math.floor(totalItems / 3);
+                const remainder = totalItems % 3;
+                const itemsTotal = (groupsOf3 * 500) + (remainder * 200); 
+
+                const discount = rawTotal - itemsTotal;
+                
+                let finalTotal = itemsTotal > 0 ? itemsTotal + DELIVERY_FEE : 0;
+                if(isCouponApplied && finalTotal > 100) {
+                    finalTotal -= 100;
+                }
+
+                return { rawTotal, itemsTotal, discount, finalTotal, itemCount: totalItems };
+            }, [cart, isCouponApplied]);
+
+            const handleWhatsAppOrder = () => {
+                let text = "Hello OLN Brands! I would like to place an order.\n\n";
+                text += "🛍️ *ORDER DETAILS:*\n";
+                cart.forEach((item, index) => {
+                    text += `${index + 1}. ${item.name}\n   - Size: ${item.size}\n   - Qty: ${item.quantity}\n   - Price: ₹${item.price * item.quantity}\n`;
+                });
+                
+                text += `\n💰 *BILLING SUMMARY:*\n`;
+                text += `- Items Total: ₹${totals.rawTotal}\n`;
+                if(totals.discount > 0) text += `- Combo Discount: -₹${totals.discount}\n`;
+                if(isCouponApplied) text += `- Coupon (DIWALI100): -₹100\n`;
+                text += `- Delivery Fee: ₹${DELIVERY_FEE}\n`;
+                text += `*Final Amount to Pay: ₹${totals.finalTotal}*\n\n`;
+
+                text += `📍 *DELIVERY ADDRESS:*\n`;
+                text += `- Name: ${loginDetails.name}\n`;
+                text += `- Primary Phone: ${address.primaryPhone}\n`;
+                if(address.altPhone) text += `- Alt Phone: ${address.altPhone}\n`;
+                text += `- House/Flat: ${address.house}\n`;
+                text += `- Area/Street: ${address.area}\n`;
+                text += `- City & State: ${address.city}, ${address.state}\n`;
+                text += `- Pincode: ${address.pin}\n\n`;
+                
+                text += "Please share the UPI payment details so I can confirm my order.";
+
+                const encodedText = encodeURIComponent(text);
+                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedText}`, '_blank');
+            };
+
+            const renderBottomNav = () => (
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 z-40 max-w-md mx-auto text-[10px] font-medium text-gray-500 pb-3">
+                    <div onClick={() => { setCurrentView('home'); window.scrollTo(0,0); }} className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${currentView === 'home' ? 'meesho-text-pink' : 'hover:text-gray-800'}`}>
+                        <i className="fa-solid fa-house text-lg"></i><span>Home</span>
+                    </div>
+                    <div onClick={() => { setCurrentView('categories'); window.scrollTo(0,0); }} className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${currentView === 'categories' || currentView === 'category_products' ? 'meesho-text-pink' : 'hover:text-gray-800'}`}>
+                        <i className="fa-solid fa-shirt text-lg"></i><span>Categories</span>
+                    </div>
+                    <div onClick={() => { setCurrentView('orders'); window.scrollTo(0,0); }} className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${currentView === 'orders' ? 'meesho-text-pink' : 'hover:text-gray-800'}`}>
+                        <i className="fa-solid fa-box text-lg"></i><span>My Orders</span>
+                    </div>
+                    <div onClick={() => { setCurrentView('account'); window.scrollTo(0,0); }} className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${currentView === 'account' ? 'meesho-text-pink' : 'hover:text-gray-800'}`}>
+                        <i className="fa-solid fa-user text-lg"></i><span>Account</span>
+                    </div>
+                </div>
+            );
+
+            // Product Grid Component with Red Crossed-out prices
+            const renderProductGrid = (items) => (
+                <div className="p-2 grid grid-cols-2 gap-2 mb-4">
+                    {items.length === 0 ? (
+                        <div className="col-span-2 text-center text-gray-500 py-10 font-bold">No products found.</div>
+                    ) : (
+                        items.map(product => {
+                            const cat = product.category || '';
+                            const isSpecial = ['diwali', 'saree', 'sharara', 'lehenga'].some(word => cat.includes(word));
+                            
+                            return (
+                                <div key={product.id} className="bg-white rounded border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer relative" onClick={() => openProductDetail(product)}>
+                                    {isSpecial ? (
+                                        <div className="absolute top-0 left-0 bg-yellow-400 text-black text-[9px] uppercase font-black px-2 py-1 rounded-br-lg z-10 shadow-sm flex items-center gap-1">
+                                            <i className="fa-solid fa-star text-red-500"></i> Diwali Special
+                                        </div>
+                                    ) : (
+                                        <div className="absolute top-0 left-0 bg-[#038d63] text-white text-[9px] uppercase font-black px-2 py-1 rounded-br-lg z-10 shadow-sm flex items-center gap-1">Trending</div>
+                                    )}
+                                    <div className={`relative bg-gray-100 ${cat === 'shoes' ? 'aspect-[4/4]' : 'aspect-[3/4]'}`}>
+                                        <img src={product.img} alt={product.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="p-2 flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <p className="text-[13px] text-gray-800 font-bold truncate">{product.name}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <p className="text-lg font-black text-gray-900">₹{product.price}</p>
+                                                {product.oldPrice && <p className="text-[12px] text-red-500 line-through font-bold mt-1">₹{product.oldPrice}</p>}
+                                            </div>
+                                            
+                                            <p className="text-[10px] text-red-600 font-bold mt-2 flex items-center gap-1 bg-red-50 px-1 py-0.5 rounded w-fit border border-red-100">
+                                                <i className="fa-solid fa-fire text-orange-500 animate-pulse"></i> Fast Selling! Only {product.stock} left
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            );
+
+            // 0. SPLASH SCREEN
+            const renderSplash = () => (
+                <div className="min-h-screen bg-black relative flex items-center justify-center overflow-hidden">
+                    <img src="https://img.sanishtech.com/u/1b84e35f47e5cdef2cca060a703b0d65.png" alt="Splash Banner" className="absolute inset-0 w-full h-full object-cover" />
+                </div>
+            );
+
+            // 1. LOGIN PAGE
+            const renderLogin = () => (
+                <div className="min-h-screen flex flex-col relative bg-black justify-end">
+                    <div className="absolute inset-0 z-0">
+                        <img src="https://img.sanishtech.com/u/1b84e35f47e5cdef2cca060a703b0d65.png" alt="Diwali Offer" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute top-0 left-0 right-0 p-4 flex justify-center z-10 bg-gradient-to-b from-black/50 to-transparent">
+                        <img src={LOGO_URL} className="w-24 drop-shadow-md" alt="OLN BRANDS" />
+                    </div>
+                    <div className="bg-white rounded-t-[1.5rem] p-6 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-20 animate-slide-up relative w-full">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900">Sign up to continue</h2>
+                            <i className="fa-solid fa-xmark text-gray-400 text-xl cursor-pointer bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"></i>
+                        </div>
+                        <form onSubmit={(e) => { 
+                            e.preventDefault(); 
+                            if(loginDetails.name && loginDetails.phone.length >= 10) {
+                                setAddress(prev => ({...prev, primaryPhone: loginDetails.phone}));
+                                setCurrentView('home'); window.scrollTo(0,0);
+                            }
+                        }} className="space-y-6">
+                            <div className="border-b border-gray-300 pb-1">
+                                <label className="text-[11px] text-gray-700 font-bold">Full Name</label>
+                                <input type="text" required value={loginDetails.name} onChange={e => setLoginDetails({...loginDetails, name: e.target.value})} className="w-full py-2 text-gray-800 focus:outline-none text-base font-medium" />
+                            </div>
+                            <div className="flex items-end gap-3 border-b border-gray-300 pb-1">
+                                <div className="flex flex-col border-r border-gray-300 pr-3 pb-1">
+                                    <label className="text-[11px] text-gray-500 font-bold mb-1">Country</label>
+                                    <div className="flex items-center gap-1 text-base font-medium text-gray-800"><span>🇮🇳</span> +91</div>
+                                </div>
+                                <div className="flex-1 pb-1">
+                                    <label className="text-[11px] text-gray-700 font-bold">Phone Number</label>
+                                    <input type="tel" required value={loginDetails.phone} onChange={e => setLoginDetails({...loginDetails, phone: e.target.value.replace(/[^0-9]/g, '')})} maxLength="10" className="w-full py-1 text-gray-800 focus:outline-none text-base font-medium" />
+                                </div>
+                            </div>
+                            <button type="submit" className="w-full meesho-pink text-white font-bold py-3.5 rounded text-[15px] mt-6 shadow-md transition hover:bg-[#831670]">Continue to Sale</button>
+                        </form>
+                    </div>
+                </div>
+            );
+
+            // 2. HOME PAGE
+            const renderHome = () => (
+                <div className="pb-20 bg-gray-50 min-h-screen relative">
+                    <div className="bg-white p-3 flex justify-between items-center sticky top-0 z-40 shadow-sm">
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentView('account')}>
+                            <img src={LOGO_URL} alt="OLN BRANDS" className="h-8 object-contain" />
+                        </div>
+                        <div className="flex gap-4 text-xl text-gray-700 items-center">
+                            <i className="fa-solid fa-magnifying-glass text-lg"></i>
+                            <div className="relative cursor-pointer" onClick={() => setCurrentView('cart')}>
+                                <i className="fa-solid fa-cart-shopping"></i>
+                                {totals.itemCount > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">{totals.itemCount}</span>}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* NEW VFX SCROLLING BANNER */}
+                    <div className="vfx-banner text-white font-black py-2.5 overflow-hidden shadow-lg border-b-2 border-yellow-400">
+                        <marquee scrollamount="6" className="text-sm tracking-widest uppercase">
+                            🎇 MEGA DIWALI FLASH SALE! Exclusive Diwali Outfits at FLAT ₹200 ( <span className="line-through decoration-2">₹800</span> ). Offer Valid ONLY for 23rd & 24th October! Grab Yours Now! 🎇
+                        </marquee>
+                    </div>
+
+                    <div className="bg-white px-3 py-2 border-b border-gray-200">
+                        <div className="bg-gray-100 rounded-md p-2.5 flex items-center gap-2 border border-gray-200">
+                            <i className="fa-solid fa-magnifying-glass text-gray-400"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Search by Keyword (e.g. Jacket, Saree)" 
+                                className="bg-transparent flex-1 focus:outline-none text-sm font-medium" 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {searchQuery.trim() !== '' ? (
+                        <div className="p-2">
+                            <div className="px-3 py-2 bg-white flex justify-between items-center border-b border-gray-100 mb-2">
+                                <h3 className="font-black text-gray-800 text-sm uppercase tracking-wide">Search Results</h3>
+                            </div>
+                            {renderProductGrid(products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())))}
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="px-2 pt-3">
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
+                                    <div>
+                                        <p className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-0.5">Combo Offer</p>
+                                        <p className="text-base font-black text-green-700">3 items for ₹500 <span className="text-[11px] font-bold text-gray-600 ml-1">+ Free Shipping</span></p>
+                                    </div>
+                                    <div className="bg-green-600 text-white p-2.5 rounded-full h-8 w-8 flex items-center justify-center shadow-md">
+                                        <i className="fa-solid fa-tags"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex bg-white py-2.5 mt-3 mb-2 shadow-sm text-[11px] font-bold text-gray-700">
+                                <div className="flex-1 flex justify-center items-center gap-1.5 border-r border-gray-200"><i className="fa-solid fa-arrow-rotate-left text-blue-500 text-sm"></i> 10 Days Return</div>
+                                <div className="flex-1 flex justify-center items-center gap-1.5 border-r border-gray-200"><i className="fa-solid fa-truck-fast text-green-500 text-sm"></i> Free Delivery</div>
+                                <div className="flex-1 flex justify-center items-center gap-1.5"><i className="fa-solid fa-tag text-pink-500 text-sm"></i> Lowest Price</div>
+                            </div>
+
+                            {/* HOME PAGE TOP COLLECTION (Filtered by isTop flag) */}
+                            <div className="px-3 py-2 mt-2 bg-white flex justify-between items-center border-y border-gray-100">
+                                <h3 className="font-black text-gray-800 text-[13px] uppercase tracking-wide">Top Collection</h3>
+                            </div>
+                            {renderProductGrid(products.filter(p => p.isTop))}
+
+                            {/* OTHER CATEGORIES DISPLAYED BELOW */}
+                            <div className="px-3 py-2 mt-2 bg-white flex justify-between items-center border-y border-gray-100">
+                                <h3 className="font-black text-gray-800 text-[13px] uppercase tracking-wide">Girls Premium Saree</h3>
+                            </div>
+                            {renderProductGrid(products.filter(p => p.category === 'saree' && !p.isTop))}
+
+                            <div className="px-3 py-2 mt-2 bg-white flex justify-between items-center border-y border-gray-100">
+                                <h3 className="font-black text-gray-800 text-[13px] uppercase tracking-wide">Lehenga Choli Collection</h3>
+                            </div>
+                            {renderProductGrid(products.filter(p => p.category === 'lehenga' && !p.isTop))}
+
+                            <div className="px-3 py-2 mt-2 bg-white flex justify-between items-center border-y border-gray-100">
+                                <h3 className="font-black text-gray-800 text-[13px] uppercase tracking-wide">Premium Footwear</h3>
+                            </div>
+                            {renderProductGrid(products.filter(p => p.category === 'shoes'))}
+                            
+                            <div className="px-3 py-2 mt-2 bg-white flex justify-between items-center border-y border-gray-100">
+                                <h3 className="font-black text-gray-800 text-[13px] uppercase tracking-wide">More Collections</h3>
+                            </div>
+                            {renderProductGrid(products.filter(p => !p.isTop && !['saree', 'lehenga', 'shoes'].includes(p.category)))}
+                        </div>
+                    )}
+
+                    {showPopup && (
+                        <div onClick={() => setCurrentView('cart')} className="fixed bottom-[4.5rem] left-4 right-4 bg-[#038d63] text-white p-4 rounded-lg shadow-2xl z-[60] flex items-center justify-between cursor-pointer animate-slide-up border border-green-500 max-w-md mx-auto">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white/20 p-2 rounded-full h-8 w-8 flex items-center justify-center"><i className="fa-solid fa-cart-arrow-down"></i></div>
+                                <div><p className="font-bold text-sm">Added to Cart!</p><p className="text-[10px] text-green-100 font-medium">Tap to checkout</p></div>
+                            </div>
+                            <div className="bg-white text-[#038d63] text-[11px] font-bold px-3 py-1.5 rounded uppercase flex items-center gap-1 shadow-sm">Checkout <i className="fa-solid fa-chevron-right text-[9px]"></i></div>
+                        </div>
+                    )}
+                    {renderBottomNav()}
+                </div>
+            );
+
+            // 3. PRODUCT DETAILS PAGE
+            const renderProductDetail = () => {
+                if(!selectedProduct) return null;
+                
+                let sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+                let defaultSelected = 'M';
+
+                const isShoe = selectedProduct.category === 'shoes';
+                const isEthnic = ['saree', 'lehenga', 'girls_diwali', 'sharara'].includes(selectedProduct.category);
+
+                if (isShoe) {
+                    sizeOptions = ['6', '7', '8', '9', '10'];
+                    defaultSelected = '8';
+                } else if (['saree', 'lehenga'].includes(selectedProduct.category)) {
+                    sizeOptions = ['Free Size'];
+                    defaultSelected = 'Free Size';
+                }
+
+                const getReviews = () => {
+                    if (isShoe) {
+                        return [
+                            { id: 1, name: "Rahul Verma", rating: 5, text: "Very comfortable and light weight. Perfect size and sole is soft.", date: "12 Oct, 2026", helpful: 124 },
+                            { id: 2, name: "Amit Singh", rating: 4, text: "Good quality shoes for this price. Looking awesome.", date: "05 Oct, 2026", helpful: 89 }
+                        ];
+                    } else if (isEthnic) {
+                        return [
+                            { id: 1, name: "Pooja Sharma", rating: 5, text: "Very beautiful dress for diwali, cloth quality is excellent!", date: "10 Oct, 2026", helpful: 806 },
+                            { id: 2, name: "Kavita Verma", rating: 4, text: "Fitting is perfect, looks exactly like the picture. Very premium.", date: "09 Oct, 2026", helpful: 337 }
+                        ];
+                    } else {
+                        return [
+                            { id: 1, name: "Aman Gupta", rating: 5, text: "Fabric is really good. Fits perfectly.", date: "11 Oct, 2026", helpful: 210 },
+                            { id: 2, name: "Nikhil", rating: 4, text: "Awesome product at this price range. Fast delivery.", date: "01 Oct, 2026", helpful: 95 }
+                        ];
+                    }
+                };
+                const currentReviews = getReviews();
+
+                return (
+                    <div className="min-h-screen bg-gray-100 pb-20 relative">
+                        <div className="bg-white p-4 flex items-center gap-4 border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+                            <i className="fa-solid fa-arrow-left text-lg cursor-pointer text-gray-700" onClick={() => window.history.length > 1 ? window.history.back() : setCurrentView('home')}></i>
+                            <div className="flex-1 flex justify-end gap-5 text-xl text-gray-700">
+                                <div className="relative cursor-pointer" onClick={() => setCurrentView('cart')}>
+                                    <i className="fa-solid fa-cart-shopping"></i>
+                                    {totals.itemCount > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{totals.itemCount}</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-full bg-white relative border-b border-gray-200">
+                            <img src={selectedProduct.img} className="w-full max-h-[60vh] object-contain bg-gray-50" />
+                            <div className="absolute top-2 left-2 bg-[#9f2089] text-white text-[10px] font-black px-2 py-1 rounded shadow-md uppercase tracking-wider">
+                                Mega Sale
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-4 mb-2 shadow-sm border-b border-gray-200">
+                            <h1 className="text-sm font-medium text-gray-600 mb-1">OLN Brands / {selectedProduct.name}</h1>
+                            <div className="flex items-end gap-2 mb-2">
+                                <span className="text-2xl font-black text-gray-900">₹{selectedProduct.price}</span>
+                                {selectedProduct.oldPrice && <span className="text-sm text-red-500 line-through font-bold mb-1 ml-2">₹{selectedProduct.oldPrice}</span>}
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-4 mb-2 shadow-sm border-y border-gray-200">
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="font-bold text-gray-800 text-sm">Select Size</h3>
+                                {selectedProduct.category !== 'saree' && <span className="text-red-500 text-[11px] font-bold animate-pulse bg-red-50 px-2 py-0.5 rounded border border-red-100"><i className="fa-solid fa-fire text-orange-500"></i> Fast Selling! Only {selectedProduct.stock} left</span>}
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {sizeOptions.map(size => (
+                                    <div 
+                                        key={size}
+                                        onClick={() => handleSizeChange(selectedProduct.id, size)}
+                                        className={`border rounded-full px-5 py-1.5 text-[13px] font-bold cursor-pointer transition-all ${
+                                            (selectedSizes[selectedProduct.id] || defaultSelected) === size 
+                                            ? 'border-[#9f2089] text-[#9f2089] bg-pink-50 shadow-inner' 
+                                            : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                                        }`}
+                                    >
+                                        {size}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-4 mb-2 shadow-sm border-y border-gray-200 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center"><i className="fa-solid fa-arrow-rotate-left text-xl text-blue-500"></i></div>
+                            <div>
+                                <p className="font-bold text-gray-800 text-sm">10 Days Easy Returns</p>
+                                <p className="text-[11px] text-gray-500 font-medium mt-0.5">No questions asked return policy</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-4 mb-24 shadow-sm border-y border-gray-200">
+                            <h3 className="font-bold text-gray-800 text-lg mb-6">Customer Ratings & Reviews</h3>
+                            
+                            <div className="flex gap-4 items-start mb-6 border-b border-gray-100 pb-6">
+                                <div className="w-1/3 text-center">
+                                    <div className="bg-[#038d63] text-white text-3xl font-bold py-2 rounded-lg mb-2 flex items-center justify-center gap-1 shadow-sm">
+                                        4.1 <i className="fa-solid fa-star text-[20px]"></i>
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 leading-tight">80,840 ratings<br/>21,255 reviews</p>
+                                </div>
+                                <div className="w-2/3 space-y-2">
+                                    <div className="flex items-center text-[11px] text-gray-800 font-medium"><span className="w-16">Very Good</span> <div className="flex-1 h-1.5 bg-gray-200 rounded mx-2 overflow-hidden"><div className="h-full bg-[#038d63] w-[60%]"></div></div> <span className="text-gray-500">40,517</span></div>
+                                    <div className="flex items-center text-[11px] text-gray-800 font-medium"><span className="w-16">Good</span> <div className="flex-1 h-1.5 bg-gray-200 rounded mx-2 overflow-hidden"><div className="h-full bg-[#038d63] w-[30%]"></div></div> <span className="text-gray-500">15,007</span></div>
+                                    <div className="flex items-center text-[11px] text-gray-800 font-medium"><span className="w-16">Ok-Ok</span> <div className="flex-1 h-1.5 bg-gray-200 rounded mx-2 overflow-hidden"><div className="h-full bg-yellow-400 w-[20%]"></div></div> <span className="text-gray-500">10,038</span></div>
+                                    <div className="flex items-center text-[11px] text-gray-800 font-medium"><span className="w-16">Bad</span> <div className="flex-1 h-1.5 bg-gray-200 rounded mx-2 overflow-hidden"><div className="h-full bg-orange-400 w-[10%]"></div></div> <span className="text-gray-500">5,477</span></div>
+                                    <div className="flex items-center text-[11px] text-gray-800 font-medium"><span className="w-16">Very Bad</span> <div className="flex-1 h-1.5 bg-gray-200 rounded mx-2 overflow-hidden"><div className="h-full bg-red-600 w-[15%]"></div></div> <span className="text-gray-500">9,801</span></div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                {currentReviews.map((rev) => (
+                                    <div key={rev.id} className="border-b border-gray-100 pb-5 last:border-0">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className={`text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ${rev.rating >= 4 ? 'bg-[#038d63]' : 'bg-yellow-500'}`}>
+                                                {rev.rating} <i className="fa-solid fa-star text-[9px]"></i>
+                                            </span>
+                                            <span className="text-sm font-bold text-gray-800">{rev.rating >= 4 ? 'Very Good' : 'Good'}</span>
+                                            <span className="text-gray-400 mx-1">•</span>
+                                            <span className="text-[11px] text-gray-400">Posted on {rev.date}</span>
+                                        </div>
+                                        <p className="text-[13px] text-gray-700 font-medium leading-relaxed mb-1">{rev.text}</p>
+                                        <p className="text-[10px] text-gray-500 mb-3">~{rev.name}</p>
+                                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600 font-bold">
+                                            <i className="fa-regular fa-thumbs-up text-sm"></i> Helpful ({rev.helpful})
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 flex z-40 max-w-md mx-auto shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
+                            <button onClick={(e) => addToCart(e, selectedProduct, false)} className="flex-1 border border-[#9f2089] text-[#9f2089] font-bold py-3 text-sm bg-white flex justify-center items-center gap-2 mr-2 rounded">
+                                <i className="fa-solid fa-cart-shopping"></i> Add to Cart
+                            </button>
+                            <button onClick={(e) => addToCart(e, selectedProduct, true)} className="flex-1 bg-[#9f2089] text-white font-bold py-3 text-sm flex justify-center items-center gap-2 rounded shadow-md">
+                                <i className="fa-solid fa-angles-right"></i> Buy Now
+                            </button>
+                        </div>
+
+                        {showPopup && (
+                            <div className="fixed top-20 left-4 right-4 bg-gray-900 text-white p-3 rounded-lg shadow-xl z-[60] flex items-center gap-3 animate-slide-up max-w-sm mx-auto opacity-95">
+                                <i className="fa-solid fa-circle-check text-green-400 text-xl"></i>
+                                <span className="font-bold text-sm">Product added to cart</span>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            // 4. CART & CHECKOUT PAGE
+            const renderCart = () => (
+                <div className="min-h-screen bg-gray-100 pb-24">
+                    <div className="bg-white p-4 flex items-center gap-4 border-b border-gray-200 sticky top-0 z-40">
+                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer" onClick={() => setCurrentView('home')}></i>
+                        <h2 className="text-base font-bold text-gray-800 flex-1">REVIEW YOUR ORDER</h2>
+                        <span className="text-blue-500 text-[10px] font-bold bg-blue-50 px-2 py-1 rounded-full border border-blue-200">STEP 1/2</span>
+                    </div>
+
+                    {cart.length === 0 ? (
+                        <div className="text-center py-20 bg-white mt-2 border-b border-gray-200">
+                            <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-4"><i className="fa-solid fa-cart-shopping text-3xl text-gray-300"></i></div>
+                            <p className="text-gray-500 font-bold mb-4">Your cart is empty</p>
+                            <button onClick={() => setCurrentView('home')} className="border border-[#9f2089] text-[#9f2089] font-bold py-2 px-6 rounded text-sm">View Products</button>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 rounded-lg p-3 m-3 flex items-center gap-4 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-2 opacity-10 text-4xl"><i className="fa-brands fa-instagram"></i></div>
+                                <i className="fa-brands fa-instagram text-3xl text-[#9f2089]"></i>
+                                <div className="relative z-10">
+                                    <p className="text-sm font-black text-gray-800 tracking-wide">EXCLUSIVE DISCOUNT!</p>
+                                    <p className="text-[11px] text-gray-700 mt-0.5 font-medium leading-tight">Follow our Instagram page <strong>@the.fashion.store.12</strong> and DM us the word "COUPON" to receive an exclusive ₹100 OFF code instantly.</p>
+                                </div>
+                            </div>
+
+                            <div className="mt-2">
+                                {cart.map((item, idx) => (
+                                    <div key={idx} className="bg-white p-3 mb-2 border-y border-gray-200 shadow-sm relative">
+                                        <div className="absolute top-2 right-2 text-[9px] bg-gray-50 text-gray-500 px-1.5 py-0.5 rounded font-bold border border-gray-200"><i className="fa-solid fa-rotate-left"></i> 10 Days Return</div>
+                                        <div className="flex gap-3 mt-4">
+                                            <div className="w-20 h-24 border border-gray-200 rounded"><img src={item.img} className="w-full h-full object-cover rounded" /></div>
+                                            <div className="flex-1">
+                                                <p className="text-[13px] font-bold text-gray-800 line-clamp-1 pr-16">{item.name}</p>
+                                                <p className="text-base font-black text-gray-900 mt-1">₹{item.price}</p>
+                                                <p className="text-xs text-gray-500 mt-1">Size: <span className="font-bold text-gray-700">{item.size}</span></p>
+                                                <div className="mt-3 flex items-center gap-3">
+                                                    <button onClick={() => updateQuantity(item.id, item.size, -1)} className="w-7 h-7 border border-gray-300 rounded flex items-center justify-center text-gray-600 font-bold">-</button>
+                                                    <span className="font-bold text-sm">{item.quantity}</span>
+                                                    <button onClick={() => updateQuantity(item.id, item.size, 1)} className="w-7 h-7 border border-gray-300 rounded flex items-center justify-center text-gray-600 font-bold">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="bg-white p-4 mb-2 border-y border-gray-200">
+                                <p className="font-bold text-gray-800 mb-2 text-sm"><i className="fa-solid fa-ticket text-pink-500 mr-1"></i> Apply Coupon Code</p>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={couponInput} 
+                                        onChange={e => setCouponInput(e.target.value)} 
+                                        placeholder="Enter Code Here" 
+                                        className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 uppercase font-bold tracking-wide"
+                                        disabled={isCouponApplied}
+                                    />
+                                    <button 
+                                        onClick={handleApplyCoupon} 
+                                        disabled={isCouponApplied || !couponInput}
+                                        className={`px-5 py-2 rounded text-sm font-bold text-white shadow-sm transition-colors ${isCouponApplied ? 'bg-green-500' : 'bg-gray-800 hover:bg-black'}`}
+                                    >
+                                        {isCouponApplied ? 'APPLIED' : 'APPLY'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-4 mb-24 border-y border-gray-200">
+                                <p className="font-bold text-gray-800 mb-3 text-sm">Price Details</p>
+                                <div className="flex justify-between text-xs text-gray-600 mb-2 font-medium"><span>Total Product Price</span><span>₹{totals.rawTotal}</span></div>
+                                {totals.discount > 0 && <div className="flex justify-between text-xs text-green-600 font-bold mb-2"><span>Combo Discount</span><span>-₹{totals.discount}</span></div>}
+                                {isCouponApplied && <div className="flex justify-between text-xs text-[#9f2089] font-black mb-2"><span>Coupon Discount (DIWALI100)</span><span>-₹100</span></div>}
+                                <div className="flex justify-between text-xs text-gray-600 mb-3 pb-3 border-b border-gray-100 font-medium"><span>Delivery Fee</span><span>₹{DELIVERY_FEE}</span></div>
+                                <div className="flex justify-between font-black text-gray-900 text-lg border-t border-gray-200 pt-3"><span>Order Total</span><span className="text-[#038d63]">₹{totals.finalTotal}</span></div>
+                            </div>
+                            <div className="bottom-checkout-bar">
+                                <div>
+                                    <p className="text-lg font-black text-gray-900">₹{totals.finalTotal}</p>
+                                    <p className="text-[10px] font-bold meesho-text-pink">VIEW PRICE DETAILS</p>
+                                </div>
+                                <button onClick={() => setCurrentView('address')} className="meesho-pink text-white font-bold py-2.5 px-8 rounded text-sm shadow-md">Continue to Address</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            const renderAddress = () => (
+                <div className="min-h-screen bg-gray-100 flex flex-col pb-24">
+                    <div className="bg-white p-4 flex items-center gap-4 border-b border-gray-200 sticky top-0 z-40">
+                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer" onClick={() => setCurrentView('cart')}></i>
+                        <h2 className="text-base font-bold text-gray-800 flex-1">DELIVERY ADDRESS</h2>
+                    </div>
+                    <form onSubmit={(e) => { e.preventDefault(); setCurrentView('payment'); }} className="bg-white p-4 mt-2 space-y-4 shadow-sm border-y border-gray-200">
+                        <div className="flex items-center gap-2 mb-4 text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">
+                            <i className="fa-solid fa-location-dot meesho-text-pink"></i> Contact & Location
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="col-span-2">
+                                <label className="text-[11px] uppercase font-bold text-gray-500">Contact Number (Primary)</label>
+                                <input type="tel" required value={address.primaryPhone} onChange={e => setAddress({...address, primaryPhone: e.target.value.replace(/[^0-9]/g, '')})} maxLength="10" className="w-full border-b border-gray-300 py-2 text-sm focus:border-[#9f2089] outline-none font-bold text-gray-800" />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="text-[11px] uppercase font-bold text-gray-500">Alternative Phone Number</label>
+                                <input type="tel" required value={address.altPhone} onChange={e => setAddress({...address, altPhone: e.target.value.replace(/[^0-9]/g, '')})} maxLength="10" className="w-full border-b border-gray-300 py-2 text-sm focus:border-[#9f2089] outline-none font-bold text-gray-800" placeholder="Family member's number" />
+                            </div>
+                            <div className="col-span-2 mt-2">
+                                <label className="text-[11px] uppercase font-bold text-gray-500">House no./ Building Name</label>
+                                <input type="text" required value={address.house} onChange={e => setAddress({...address, house: e.target.value})} className="w-full border-b border-gray-300 py-2 text-sm focus:border-[#9f2089] outline-none" />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="text-[11px] uppercase font-bold text-gray-500">Road Name, Area, Colony</label>
+                                <input type="text" required value={address.area} onChange={e => setAddress({...address, area: e.target.value})} className="w-full border-b border-gray-300 py-2 text-sm focus:border-[#9f2089] outline-none" />
+                            </div>
+                            <div>
+                                <label className="text-[11px] uppercase font-bold text-gray-500">Pincode</label>
+                                <input type="text" required value={address.pin} onChange={e => setAddress({...address, pin: e.target.value.replace(/[^0-9]/g, '')})} maxLength="6" className="w-full border-b border-gray-300 py-2 text-sm focus:border-[#9f2089] outline-none" />
+                            </div>
+                            <div>
+                                <label className="text-[11px] uppercase font-bold text-gray-500">City</label>
+                                <input type="text" required value={address.city} onChange={e => setAddress({...address, city: e.target.value})} className="w-full border-b border-gray-300 py-2 text-sm focus:border-[#9f2089] outline-none" />
+                            </div>
+                        </div>
+                        <div className="bottom-checkout-bar">
+                            <div className="text-left w-full mr-4">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase">Deliver to:</p>
+                                <p className="text-sm font-bold text-gray-800 line-clamp-1">{loginDetails.name || 'User'}</p>
+                            </div>
+                            <button type="submit" className="meesho-pink text-white font-bold py-2.5 px-6 rounded text-sm w-full shadow-md">Proceed to Payment</button>
+                        </div>
+                    </form>
+                </div>
+            );
+
+            // 6. WHATSAPP PAYMENT PAGE
+            const renderPayment = () => (
+                <div className="min-h-screen bg-gray-100 flex flex-col">
+                    <div className="bg-white p-4 flex items-center gap-4 border-b border-gray-200 sticky top-0 z-40">
+                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer" onClick={() => setCurrentView('address')}></i>
+                        <h2 className="text-base font-bold text-gray-800 flex-1 uppercase tracking-wide">Complete Your Order</h2>
+                    </div>
+                    
+                    <div className="p-4 flex-1">
+                        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm p-6 text-center mt-4">
+                            <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-5 border-4 border-white shadow-md">
+                                <i className="fa-brands fa-whatsapp text-5xl text-green-500"></i>
+                            </div>
+                            <p className="font-black text-gray-800 text-xl mb-3">Secure Payment via WhatsApp</p>
+                            <p className="text-sm text-gray-600 font-medium leading-relaxed mb-6">
+                                To ensure a secure transaction and confirm your product availability, we process payments directly through our official WhatsApp support. Click the button below to instantly share your order details with our agent.
+                            </p>
+                            
+                            <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200 text-left">
+                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Order Summary</p>
+                                <div className="flex justify-between items-center text-sm font-bold text-gray-800">
+                                    <span>Total Amount to Pay:</span>
+                                    <span className="text-xl text-green-600">₹{totals.finalTotal}</span>
+                                </div>
+                            </div>
+                            
+                            <button 
+                               onClick={handleWhatsAppOrder} 
+                               className="block w-full bg-[#25D366] text-white font-black py-4 rounded-xl text-center text-base shadow-lg tracking-wide hover:bg-[#128C7E] transition transform hover:-translate-y-0.5"
+                            >
+                                <i className="fa-brands fa-whatsapp mr-2 text-xl align-middle"></i> Place Order via WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // 7. CATEGORIES PAGE
+            const renderCategories = () => (
+                <div className="min-h-screen bg-gray-50 pb-20">
+                    <div className="bg-white p-4 border-b border-gray-200 sticky top-0 z-40 shadow-sm flex items-center gap-3">
+                        <h2 className="text-base font-bold text-gray-800">CATEGORIES</h2>
+                    </div>
+                    <div className="p-3 grid grid-cols-2 gap-3 mt-2">
+                        {categoryList.map(cat => (
+                            <div key={cat.id} className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col items-center justify-center p-3 cursor-pointer hover:shadow-md transition" onClick={() => { setActiveCategory(cat.id); setCurrentView('category_products'); window.scrollTo(0,0); }}>
+                                <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-200 mb-2">
+                                    <img src={cat.img} className="w-full h-full object-cover" />
+                                </div>
+                                <p className="text-xs font-bold text-center text-gray-700 leading-tight">{cat.title}</p>
+                            </div>
+                        ))}
+                    </div>
+                    {renderBottomNav()}
+                </div>
+            );
+
+            // 8. CATEGORY SPECIFIC PRODUCTS PAGE
+            const renderCategoryProducts = () => {
+                const categoryData = categoryList.find(c => c.id === activeCategory);
+                const title = categoryData ? categoryData.title : 'Products';
+                const filteredProducts = products.filter(p => p.category === activeCategory);
+
+                return (
+                    <div className="min-h-screen bg-gray-50 pb-20">
+                        <div className="bg-white p-4 border-b border-gray-200 sticky top-0 z-40 shadow-sm flex items-center gap-3">
+                            <i className="fa-solid fa-arrow-left text-lg cursor-pointer text-gray-700" onClick={() => setCurrentView('categories')}></i>
+                            <h2 className="text-base font-bold text-gray-800 flex-1 truncate">{title}</h2>
+                            <div className="relative cursor-pointer" onClick={() => setCurrentView('cart')}>
+                                <i className="fa-solid fa-cart-shopping text-gray-700"></i>
+                                {totals.itemCount > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{totals.itemCount}</span>}
+                            </div>
+                        </div>
+                        {renderProductGrid(filteredProducts)}
+                        {renderBottomNav()}
+                    </div>
+                );
+            };
+
+            const renderOrders = () => (
+                <div className="min-h-screen bg-gray-50 pb-20">
+                    <div className="bg-white p-4 border-b border-gray-200 sticky top-0 z-40 shadow-sm flex items-center gap-3"><h2 className="text-base font-bold text-gray-800">MY ORDERS</h2></div>
+                    <div className="p-8 text-center mt-10 bg-white m-4 rounded shadow-sm border"><p className="font-bold text-gray-600">No orders found</p></div>
+                    {renderBottomNav()}
+                </div>
+            );
+            
+            const renderAccount = () => (
+                <div className="min-h-screen bg-gray-50 pb-20">
+                    <div className="bg-white p-4 flex items-center gap-4 border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+                        <i className="fa-solid fa-arrow-left text-lg cursor-pointer text-gray-600" onClick={() => setCurrentView('home')}></i>
+                        <h2 className="text-base font-bold text-gray-800 flex-1">ACCOUNT</h2>
+                        <i className="fa-solid fa-cart-shopping text-gray-600 cursor-pointer" onClick={() => setCurrentView('cart')}></i>
+                    </div>
+                    
+                    <div className="bg-white p-4 mb-2 flex items-center gap-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50">
+                        <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center text-[#9f2089] text-3xl border border-pink-200">
+                            <i className="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg text-gray-800">{loginDetails.name || 'User'}</h3>
+                            <p className="text-gray-500 text-sm font-medium">+91 {loginDetails.phone || '9876543210'}</p>
+                        </div>
+                        <i className="fa-solid fa-chevron-right ml-auto text-gray-400"></i>
+                    </div>
+
+                    <div className="flex bg-white py-4 px-4 mb-2 border-y border-gray-200 gap-4">
+                        <div className="flex-1 border border-gray-200 rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50">
+                            <i className="fa-solid fa-headset text-blue-500 text-xl"></i>
+                            <span className="text-sm font-bold text-gray-700">Help Centre</span>
+                        </div>
+                        <div className="flex-1 border border-gray-200 rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50">
+                            <i className="fa-solid fa-language text-purple-500 text-xl"></i>
+                            <span className="text-sm font-bold text-gray-700">Change Language</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white px-4 py-2 mb-2 border-y border-gray-200">
+                        <p className="font-bold text-gray-800 mb-2 text-sm">My Payments</p>
+                        <div className="flex items-center gap-4 py-3 border-b border-gray-100 cursor-pointer">
+                            <i className="fa-solid fa-building-columns text-blue-500 text-lg w-5 text-center"></i> 
+                            <span className="font-medium text-sm text-gray-700">Bank & UPI Details</span>
+                        </div>
+                        <div className="flex items-center gap-4 py-3 cursor-pointer">
+                            <i className="fa-regular fa-credit-card text-blue-500 text-lg w-5 text-center"></i> 
+                            <span className="font-medium text-sm text-gray-700">Payments & Refunds</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white px-4 py-2 border-y border-gray-200 mb-8 mt-2">
+                        <p className="font-bold text-gray-800 mb-2 text-sm">My Activity</p>
+                        <div className="flex items-center gap-4 py-3 border-b border-gray-100 cursor-pointer">
+                            <i className="fa-solid fa-heart text-red-500 text-lg w-5 text-center"></i> 
+                            <span className="font-medium text-sm text-gray-700">Wishlisted Products</span>
+                        </div>
+                        <div className="flex items-center gap-4 py-3 border-b border-gray-100 cursor-pointer">
+                            <i className="fa-solid fa-share-nodes text-purple-500 text-lg w-5 text-center"></i> 
+                            <span className="font-medium text-sm text-gray-700">Shared Products</span>
+                        </div>
+                        <div className="flex items-center gap-4 py-3 cursor-pointer text-red-500" onClick={() => { setLoginDetails({name:'', phone:''}); setCurrentView('login'); }}>
+                            <i className="fa-solid fa-arrow-right-from-bracket text-lg w-5 text-center"></i> 
+                            <span className="font-bold text-sm">Sign Out</span>
+                        </div>
+                    </div>
+                    {renderBottomNav()}
+                </div>
+            );
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen bg-gray-50 shadow-xl relative overflow-x-hidden font-sans">
+                    {currentView === 'splash' && renderSplash()}
+                    {currentView === 'login' && renderLogin()}
+                    {currentView === 'home' && renderHome()}
+                    {currentView === 'pdp' && renderProductDetail()}
+                    {currentView === 'categories' && renderCategories()}
+                    {currentView === 'category_products' && renderCategoryProducts()}
+                    {currentView === 'orders' && renderOrders()}
+                    {currentView === 'account' && renderAccount()}
+                    {currentView === 'cart' && renderCart()}
+                    {currentView === 'address' && renderAddress()}
+                    {currentView === 'payment' && renderPayment()}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
